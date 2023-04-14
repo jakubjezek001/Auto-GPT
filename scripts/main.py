@@ -41,17 +41,14 @@ def attempt_to_fix_json_by_finding_outermost_brackets(json_string):
         # Use regex to search for JSON objects
         import regex
         json_pattern = regex.compile(r"\{(?:[^{}]|(?R))*\}")
-        json_match = json_pattern.search(json_string)
-
-        if json_match:
-            # Extract the valid JSON object from the string
-            json_string = json_match.group(0)
-            logger.typewriter_log(title="Apparently json was fixed.", title_color=Fore.GREEN)
-            if cfg.speak_mode and cfg.debug_mode:
-               speak.say_text("Apparently json was fixed.")
-        else:
+        if not (json_match := json_pattern.search(json_string)):
             raise ValueError("No valid JSON object found")
 
+        # Extract the valid JSON object from the string
+        json_string = json_match.group(0)
+        logger.typewriter_log(title="Apparently json was fixed.", title_color=Fore.GREEN)
+        if cfg.speak_mode and cfg.debug_mode:
+           speak.say_text("Apparently json was fixed.")
     except (json.JSONDecodeError, ValueError) as e:
         if cfg.speak_mode:
             speak.say_text("Didn't work. I will have to ignore this response then.")
@@ -134,10 +131,11 @@ def construct_prompt():
     config = AIConfig.load()
     if config.ai_name:
         logger.typewriter_log(
-            f"Welcome back! ",
+            "Welcome back! ",
             Fore.GREEN,
             f"Would you like me to return to being {config.ai_name}?",
-            speak_text=True)
+            speak_text=True,
+        )
         should_continue = utils.clean_input(f"""Continue with the last settings?
 Name:  {config.ai_name}
 Role:  {config.ai_role}
@@ -154,8 +152,7 @@ Continue (y/n): """)
     global ai_name
     ai_name = config.ai_name
 
-    full_prompt = config.construct_full_prompt()
-    return full_prompt
+    return config.construct_full_prompt()
 
 
 def prompt_user():
@@ -204,12 +201,11 @@ def prompt_user():
         if ai_goal == "":
             break
         ai_goals.append(ai_goal)
-    if len(ai_goals) == 0:
+    if not ai_goals:
         ai_goals = ["Increase net worth", "Grow Twitter Account",
                     "Develop and manage multiple businesses autonomously"]
 
-    config = AIConfig(ai_name, ai_role, ai_goals)
-    return config
+    return AIConfig(ai_name, ai_role, ai_goals)
 
 
 def parse_arguments():
@@ -267,9 +263,9 @@ def parse_arguments():
     if args.memory_type:
         supported_memory = get_supported_memory_backends()
         chosen = args.memory_type
-        if not chosen in supported_memory:
+        if chosen not in supported_memory:
             logger.typewriter_log("ONLY THE FOLLOWING MEMORY BACKENDS ARE SUPPORTED: ", Fore.RED, f'{supported_memory}')
-            logger.typewriter_log(f"Defaulting to: ", Fore.YELLOW, cfg.memory_backend)
+            logger.typewriter_log("Defaulting to: ", Fore.YELLOW, cfg.memory_backend)
         else:
             cfg.memory_backend = chosen
 
@@ -292,7 +288,7 @@ def main():
     # Initialize memory and make sure it is empty.
     # this is particularly important for indexing and referencing pinecone memory
     memory = get_memory(cfg, init=True)
-    print('Using memory of type: ' + memory.__class__.__name__)
+    print(f'Using memory of type: {memory.__class__.__name__}')
     agent = Agent(
         ai_name=ai_name,
         memory=memory,
@@ -374,10 +370,9 @@ class Agent:
                     f"Enter 'y' to authorise command, 'y -N' to run N continuous commands, 'n' to exit program, or enter feedback for {self.ai_name}...",
                     flush=True)
                 while True:
-                    console_input = utils.clean_input(Fore.MAGENTA + "Input:" + Style.RESET_ALL)
+                    console_input = utils.clean_input(f"{Fore.MAGENTA}Input:{Style.RESET_ALL}")
                     if console_input.lower().rstrip() == "y":
                         self.user_input = "GENERATE NEXT COMMAND JSON"
-                        break
                     elif console_input.lower().startswith("y -"):
                         try:
                             self.next_action_count = abs(int(console_input.split(" ")[1]))
@@ -385,15 +380,12 @@ class Agent:
                         except ValueError:
                             print("Invalid input format. Please enter 'y -n' where n is the number of continuous tasks.")
                             continue
-                        break
                     elif console_input.lower() == "n":
                         self.user_input = "EXIT"
-                        break
                     else:
                         self.user_input = console_input
                         command_name = "human_feedback"
-                        break
-
+                    break
                 if self.user_input == "GENERATE NEXT COMMAND JSON":
                     logger.typewriter_log(
                         "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=",
@@ -411,7 +403,7 @@ class Agent:
 
             # Execute command
             if command_name is not None and command_name.lower().startswith("error"):
-                result = f"Command {command_name} threw the following error: " + arguments
+                result = f"Command {command_name} threw the following error: {arguments}"
             elif command_name == "human_feedback":
                 result = f"Human feedback: {self.user_input}"
             else:
@@ -420,8 +412,8 @@ class Agent:
                     self.next_action_count -= 1
 
             memory_to_add = f"Assistant Reply: {assistant_reply} " \
-                            f"\nResult: {result} " \
-                            f"\nHuman Feedback: {self.user_input} "
+                                f"\nResult: {result} " \
+                                f"\nHuman Feedback: {self.user_input} "
 
             self.memory.add(memory_to_add)
 

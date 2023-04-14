@@ -64,11 +64,10 @@ def gtts_speech(text):
 def macos_tts_speech(text, voice_index=0):
     if voice_index == 0:
         os.system(f'say "{text}"')
+    elif voice_index == 1:
+        os.system(f'say -v "Ava (Premium)" "{text}"')
     else:
-        if voice_index == 1:
-            os.system(f'say -v "Ava (Premium)" "{text}"')
-        else:
-            os.system(f'say -v Samantha "{text}"')
+        os.system(f'say -v Samantha "{text}"')
 
 
 def say_text(text, voice_index=0):

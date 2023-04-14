@@ -35,10 +35,10 @@ class RedisMemory(MemoryProviderSingleton):
 
         Returns: None
         """
-        redis_host = cfg.redis_host
         redis_port = cfg.redis_port
         redis_password = cfg.redis_password
         self.dimension = 1536
+        redis_host = cfg.redis_host
         self.redis = redis.Redis(
             host=redis_host,
             port=redis_port,
@@ -52,8 +52,9 @@ class RedisMemory(MemoryProviderSingleton):
             self.redis.ping()
         except redis.ConnectionError as e:
             logger.typewriter_log("FAILED TO CONNECT TO REDIS", Fore.RED, Style.BRIGHT + str(e) + Style.RESET_ALL)
-            logger.double_check("Please ensure you have setup and configured Redis properly for use. " +
-                                f"You can check out {Fore.CYAN + Style.BRIGHT}https://github.com/Torantulino/Auto-GPT#redis-setup{Style.RESET_ALL} to ensure you've set up everything correctly.")
+            logger.double_check(
+                f"Please ensure you have setup and configured Redis properly for use. You can check out {Fore.CYAN + Style.BRIGHT}https://github.com/Torantulino/Auto-GPT#redis-setup{Style.RESET_ALL} to ensure you've set up everything correctly."
+            )
             exit(1)
 
         if cfg.wipe_redis_on_start:
@@ -70,7 +71,7 @@ class RedisMemory(MemoryProviderSingleton):
             print("Error creating Redis search index: ", e)
         existing_vec_num = self.redis.get(f'{cfg.memory_index}-vec_num')
         self.vec_num = int(existing_vec_num.decode('utf-8')) if\
-            existing_vec_num else 0
+                existing_vec_num else 0
 
     def add(self, data: str) -> str:
         """

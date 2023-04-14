@@ -43,16 +43,16 @@ def get_response(url, headers=cfg.user_agent_header, timeout=10):
 
         # Check if the response contains an HTTP error
         if response.status_code >= 400:
-            return None, "Error: HTTP " + str(response.status_code) + " error"
+            return None, f"Error: HTTP {response.status_code} error"
 
         return response, None
     except ValueError as ve:
         # Handle invalid URL format
-        return None, "Error: " + str(ve)
+        return None, f"Error: {str(ve)}"
 
     except requests.exceptions.RequestException as re:
         # Handle exceptions related to the HTTP request (e.g., connection errors, timeouts, etc.)
-        return None, "Error: " + str(re)
+        return None, f"Error: {str(re)}"
 
 
 def scrape_text(url):
@@ -76,18 +76,12 @@ def scrape_text(url):
 
 def extract_hyperlinks(soup):
     """Extract hyperlinks from a BeautifulSoup object"""
-    hyperlinks = []
-    for link in soup.find_all('a', href=True):
-        hyperlinks.append((link.text, link['href']))
-    return hyperlinks
+    return [(link.text, link['href']) for link in soup.find_all('a', href=True)]
 
 
 def format_hyperlinks(hyperlinks):
     """Format hyperlinks into a list of strings"""
-    formatted_links = []
-    for link_text, link_url in hyperlinks:
-        formatted_links.append(f"{link_text} ({link_url})")
-    return formatted_links
+    return [f"{link_text} ({link_url})" for link_text, link_url in hyperlinks]
 
 
 def scrape_links(url):
@@ -160,10 +154,8 @@ def summarize_text(text, question):
     combined_summary = "\n".join(summaries)
     messages = [create_message(combined_summary, question)]
 
-    final_summary = create_chat_completion(
+    return create_chat_completion(
         model=cfg.fast_llm_model,
         messages=messages,
         max_tokens=300,
     )
-
-    return final_summary

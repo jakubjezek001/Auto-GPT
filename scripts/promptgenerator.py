@@ -51,8 +51,7 @@ class PromptGenerator:
         if args is None:
             args = {}
 
-        command_args = {arg_key: arg_value for arg_key,
-                        arg_value in args.items()}
+        command_args = dict(args.items())
 
         command = {
             "label": command_label,
@@ -118,12 +117,4 @@ class PromptGenerator:
             str: The generated prompt string.
         """
         formatted_response_format = json.dumps(self.response_format, indent=4)
-        prompt_string = (
-            f"Constraints:\n{self._generate_numbered_list(self.constraints)}\n\n"
-            f"Commands:\n{self._generate_numbered_list(self.commands, item_type='command')}\n\n"
-            f"Resources:\n{self._generate_numbered_list(self.resources)}\n\n"
-            f"Performance Evaluation:\n{self._generate_numbered_list(self.performance_evaluation)}\n\n"
-            f"You should only respond in JSON format as described below \nResponse Format: \n{formatted_response_format} \nEnsure the response can be parsed by Python json.loads"
-        )
-
-        return prompt_string
+        return f"Constraints:\n{self._generate_numbered_list(self.constraints)}\n\nCommands:\n{self._generate_numbered_list(self.commands, item_type='command')}\n\nResources:\n{self._generate_numbered_list(self.resources)}\n\nPerformance Evaluation:\n{self._generate_numbered_list(self.performance_evaluation)}\n\nYou should only respond in JSON format as described below \nResponse Format: \n{formatted_response_format} \nEnsure the response can be parsed by Python json.loads"

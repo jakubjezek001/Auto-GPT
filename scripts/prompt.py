@@ -57,7 +57,4 @@ def get_prompt():
     prompt_generator.add_performance_evaluation("Reflect on past decisions and strategies to refine your approach.")
     prompt_generator.add_performance_evaluation("Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.")
 
-    # Generate the prompt string
-    prompt_string = prompt_generator.generate_prompt_string()
-
-    return prompt_string
+    return prompt_generator.generate_prompt_string()

@@ -10,7 +10,7 @@ openai.api_key = cfg.openai_api_key
 
 # Overly simple abstraction until we create something better
 # simple retry mechanism when getting a rate error or a bad gateway
-def create_chat_completion(messages, model=None, temperature=cfg.temperature, max_tokens=None)->str:
+def create_chat_completion(messages, model=None, temperature=cfg.temperature, max_tokens=None) -> str:
     """Create a chat completion using the OpenAI API"""
     response = None
     num_retries = 5
@@ -34,15 +34,20 @@ def create_chat_completion(messages, model=None, temperature=cfg.temperature, ma
             break
         except openai.error.RateLimitError:
             if cfg.debug_mode:
-                print(Fore.RED + "Error: ", "API Rate Limit Reached. Waiting 20 seconds..." + Fore.RESET)
+                print(
+                    f"{Fore.RED}Error: ",
+                    f"API Rate Limit Reached. Waiting 20 seconds...{Fore.RESET}",
+                )
             time.sleep(20)
         except openai.error.APIError as e:
-            if e.http_status == 502:
-                if cfg.debug_mode:
-                    print(Fore.RED + "Error: ", "API Bad gateway. Waiting 20 seconds..." + Fore.RESET)
-                time.sleep(20)
-            else:
+            if e.http_status != 502:
                 raise
+            if cfg.debug_mode:
+                print(
+                    f"{Fore.RED}Error: ",
+                    f"API Bad gateway. Waiting 20 seconds...{Fore.RESET}",
+                )
+            time.sleep(20)
             if attempt == num_retries - 1:
                 raise
 
