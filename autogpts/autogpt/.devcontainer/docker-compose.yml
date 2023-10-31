@@ -5,8 +5,8 @@ version: '3.9'
 services:
   auto-gpt:
     build:
-      dockerfile: .devcontainer/Dockerfile
-      context: ../
+      dockerfile: autogpts/autogpt/.devcontainer/Dockerfile
+      context: ../../../
     tty: true
     volumes:
-      - ../:/workspace/AutoGPT
+      - ../../../:/workspace/AutoGPT
